@@ -92,7 +92,7 @@ int main()
 	);
 	//
 	rubric.criterion(
-		"dynamic_max_calories correctness", 4,
+		"dynamic_max_weight correctness", 4,
 		[&]()
 		{
 			std::unique_ptr<FoodVector> soln_small, soln_large;
@@ -100,8 +100,8 @@ int main()
 			soln_small = dynamic_max_weight(*filtered_foods, 500),
 			soln_large = dynamic_max_weight(*filtered_foods, 5000);
 			
-			//print_food_vector(*soln_small);
-			//print_food_vector(*soln_large);
+			// print_food_vector(*soln_small);
+			// print_food_vector(*soln_large);
 			
 			TEST_TRUE("non-null", soln_small);
 			TEST_TRUE("non-null", soln_large);
@@ -136,21 +136,21 @@ int main()
 		{
 			std::unique_ptr<FoodVector> soln;
 			
-			soln = exhaustive_max_weight(trivial_foods, 3);
+			soln = exhaustive_max_calories(trivial_foods, 3);
 			TEST_TRUE("non-null", soln);
 			TEST_TRUE("empty solution", soln->empty());
 			
-			soln = exhaustive_max_weight(trivial_foods, 10);
+			soln = exhaustive_max_calories(trivial_foods, 10);
 			TEST_TRUE("non-null", soln);
 			TEST_EQUAL("whole corn only", 1, soln->size());
 			TEST_EQUAL("whole corn only", "test whole corn", (*soln)[0]->description());
 			
-			soln = exhaustive_max_weight(trivial_foods, 9);
+			soln = exhaustive_max_calories(trivial_foods, 9);
 			TEST_TRUE("non-null", soln);
 			TEST_EQUAL("pasta only", 1, soln->size());
 			TEST_EQUAL("pasta only", "test pasta", (*soln)[0]->description());
 			
-			soln = exhaustive_max_weight(trivial_foods, 14);
+			soln = exhaustive_max_calories(trivial_foods, 14);
 			TEST_TRUE("non-null", soln);
 			TEST_EQUAL("whole corn and pasta", 2, soln->size());
 			TEST_EQUAL("whole corn and pasta", "test whole corn", (*soln)[0]->description());
@@ -158,7 +158,6 @@ int main()
 		}
 	);
 	
-	//
 	rubric.criterion(
 		"exhaustive_max_weight correctness", 4,
 		[&]()
@@ -179,7 +178,7 @@ int main()
 				auto small_foods = filter_food_vector(*filtered_foods, 1, 2000, n);
 				TEST_TRUE("non-null", small_foods);
 				
-				auto solution = exhaustive_max_weight(*small_foods, 2000);
+				auto solution = exhaustive_max_calories(*small_foods, 2000);
 				TEST_TRUE("non-null", solution);
 				
 				double actual_calories, actual_weight;

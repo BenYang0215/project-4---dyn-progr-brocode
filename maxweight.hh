@@ -232,23 +232,25 @@ std::unique_ptr<FoodVector> filter_food_vector
 )
 {
     // TODO: implement this function, then delete the return statement below
-    return nullptr;
-}
+    std::unique_ptr<FoodVector> filtered(new FoodVector);
 
+    // iterate over source FoodVector
+    for (auto& food : source)
+    {
+        // if food weight is within the specified bounds
+        if (food->weight() >= min_weight && food->weight() <= max_weight)
+        {
+            // add the food item to the filtered vector
+            filtered->push_back(food);
 
-// Compute the optimal set of food items with a exhaustive search algorithm.
-// Specifically, among all subsets of food items, return the subset 
-// whose weight in ounces fits within the total_weight one can carry and
-// whose total calories is greatest.
-// To avoid overflow, the size of the food items vector must be less than 64.
-std::unique_ptr<FoodVector> exhaustive_max_calories
-(
-	const FoodVector& foods,
-	double total_weight
-)
-{
-// TODO: implement this function, then delete the return statement below
-    return nullptr;
+            // stop adding items at limit
+            if (filtered->size() == static_cast<long long unsigned int>(total_size))
+                break;
+        }
+    }
+
+    // return the filtered vector
+    return filtered;
 }
 
 // Compute the optimal set of food items with dynamic programming.
@@ -262,13 +264,41 @@ std::unique_ptr<FoodVector> dynamic_max_weight
 	double total_calories
 )
 {
-    std::vector<std::vector<double>> T;
-	std::unique_ptr<FoodVector> source(new FoodVector(foods));
-	std::unique_ptr<FoodVector> best(new FoodVector);
+	// std::unique_ptr<FoodVector> source(new FoodVector(foods));
+	// std::unique_ptr<FoodVector> best(new FoodVector);
 	// print_food_vector(*todo);
     
     // TODO: implement this function, then delete the return statement below
-	return nullptr;
+	int n = foods.size();
+    int total_calories_int = static_cast<int>(total_calories);
+
+    // DP table
+    std::vector<std::vector<double>> dp(n + 1, std::vector<double>(total_calories_int + 1, 0.0));
+
+    // build DP table
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j <= total_calories_int; ++j) {
+            if (foods[i]->calorie() > j) {
+                dp[i + 1][j] = dp[i][j];
+            } else {
+				// choose whichever is higher
+                dp[i + 1][j] = std::max(dp[i][j], dp[i][j - static_cast<int>(foods[i]->calorie())] + foods[i]->weight());
+            }
+        }
+    }
+
+    // backtrack to find chosen foods
+    std::unique_ptr<FoodVector> best(new FoodVector);
+    int weight = total_calories_int;
+    for (int i = n; i > 0 && weight > 0; --i) {
+		// the food was chosen so add it
+        if (dp[i][weight] != dp[i - 1][weight]) {
+            best->push_back(foods[i - 1]);
+            weight -= static_cast<int>(foods[i - 1]->calorie());
+        }
+    }
+
+    return best;
 }
 
 
@@ -277,12 +307,42 @@ std::unique_ptr<FoodVector> dynamic_max_weight
 // whose weight in ounces fits within the total_weight one can carry and
 // whose total calories is greatest.
 // To avoid overflow, the size of the food items vector must be less than 64.
-std::unique_ptr<FoodVector> exhaustive_max_weight
+std::unique_ptr<FoodVector> exhaustive_max_calories
 (
 	const FoodVector& foods,
 	double total_calorie
 )
 {
-// TODO: implement this function, then delete the return statement below
-	return nullptr;
+	// TODO: implement this function, then delete the return statement below
+	// prevent overflow
+	assert(foods.size() < 64); 
+
+    std::unique_ptr<FoodVector> best = nullptr;
+    double bestWeight = 0;
+
+	// loop over all subsets
+    uint64_t n = foods.size();
+    for (uint64_t bits = 0; bits < (1ull << n); ++bits) { 
+        std::unique_ptr<FoodVector> candidate(new FoodVector);
+        double candidateCalorie = 0;
+        double candidateWeight = 0;
+
+        for (uint64_t j = 0; j < n; ++j) {
+			// if the j-th bit is set
+            if (((bits >> j) & 1) == 1) {
+                candidate->push_back(foods[j]);
+                candidateCalorie += foods[j]->calorie();
+                candidateWeight += foods[j]->weight();
+            }
+        }
+
+		// update best if this subset is better
+        if (candidateCalorie <= total_calorie && 
+            (best == nullptr || candidateWeight > bestWeight)) {
+            best = std::move(candidate);
+            bestWeight = candidateWeight;
+        }
+    }
+
+    return best;
 }

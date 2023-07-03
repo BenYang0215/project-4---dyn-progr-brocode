@@ -23,7 +23,7 @@ int main()
     auto small_foods = filter_food_vector(*filtered_foods, 1, 2000, n);
 
     Timer timer;
-    auto solution = exhaustive_max_weight(*small_foods, 2000);
+    auto solution = exhaustive_max_calories(*small_foods, 2000);
     exhaustive << n << "," << timer.elapsed() << endl;
   }
   exhaustive.close();
